@@ -1,72 +1,34 @@
 --[[
-   Ensure there's only on instance of any unique item, and if one's held by a
-   player that's been offline for more than TODO days, replace it back into
-   the world.  https://i.imgur.com/rsuXB69.gif
+   Ensure there's only on instance of any unique item, and if one's held by a player
+   that's been offline for more than N days, replace it back into the world.
+   https://i.imgur.com/rsuXB69.gif
 
-   http://en.uesp.net/wiki/Morrowind:Eltonbrand
-   http://en.uesp.net/wiki/Morrowind:Goldbrand
-   http://en.uesp.net/wiki/Morrowind:Mentor%27s_Ring
-   http://en.uesp.net/wiki/Morrowind:Artifacts
-   http://en.uesp.net/wiki/Morrowind:Unique_Clothing
+   References for unique items in vanilla Morrowind:
 
-   METHOD USAGE:
+       http://en.uesp.net/wiki/Morrowind:Eltonbrand
+       http://en.uesp.net/wiki/Morrowind:Goldbrand
+       http://en.uesp.net/wiki/Morrowind:Mentor%27s_Ring
+       http://en.uesp.net/wiki/Morrowind:Artifacts
+       http://en.uesp.net/wiki/Morrowind:Unique_Clothing
 
-   1) Near the top of serverCore.lua, below 'menuHelper = require("menuHelper")', add this:
+   INSTALLATION:
 
-       UniqueItems = require("UniqueItems")
+   1) Place `UniqueItems.lua` into your `CoreScripts/scripts` directory.  Symlinks are OK.
 
-   2) In serverCore.lua, in the 'OnServerPostInit' definition, place this:
+   2) Place the `UniqueItemsDB.json` file into the `CoreScripts/data/UniqueItems`.  Create the directory, symlinks are OK.
 
-       UniqueItems.OnServerPostInit()
+   3) Add the following to `CoreScripts/scripts/customScripts.lua`:
 
-   Right below this line:
+       require("UniqueItems")
 
-       ResetAdminCounter()
+   4) Optionally configure `config.idleDaysLimit` to suit your fancy (found below.)
 
-   3) In serverCore.lua, in the 'OnPlayerConnect' definition, place this:
-
-       UniqueItems.OnPlayerConnect(pid)
-
-   Right below these lines:
-
-       tes3mp.LogAppend(enumerations.log.INFO, "- New player is named " .. playerName)
-       eventHandler.OnPlayerConnect(pid, playerName)
-
-   4) In serverCore.lua, in the 'OnPlayerDisconnect' definition, place this:
-
-       UniqueItems.OnPlayerDisconnect(pid)
-
-   Right above this line:
-
-       tes3mp.SendMessage(pid, message, true)
-
-   5) In serverCore.lua, in the 'OnPlayerInventory' definition, place this:
-
-       UniqueItems.OnPlayerInventory(pid)
-
-   Right below this line:
-
-       eventHandler.OnPlayerInventory(pid)
-
-   6) In serverCore.lua, in the 'OnObjectSpawn' definition, place this:
-
-       UniqueItems.OnObjectSpawn(pid, cellDescription)
-
-   Right below this line:
-
-       eventHandler.OnObjectSpawn(pid, cellDescription)
-
-   7) Optionally configure the 'config.idleDaysLimit' value to suit your liking (found below.)
-
-VERSION: 1
+VERSION: 2
 
 --]]
-local jsonInterface = require("jsonInterface")
+local UniqueItems = {}
 local lfs = require("lfs")
-
-local Methods = {}
 local config = {}
-
 -- START user config
 --
 -- Any extra item refIds that you'd like to consider "unique".
@@ -235,6 +197,7 @@ local function handleDupeUnique(pid, itemName, playerHas)
    player:Save()
    player:LoadInventory()
    player:LoadEquipment()
+   player:LoadQuickKeys()
 end
 
 local function updateLastSeen(pid)
@@ -252,7 +215,7 @@ local function updateLastSeen(pid)
    end
 end
 
-Methods.OnObjectSpawn = function(pid, cellDescription)
+function UniqueItems.OnObjectSpawn(eventStatus, pid, cellDescription)
    --[[
       Remove held uniques from cells when they spawn anew.
 
@@ -291,7 +254,7 @@ Methods.OnObjectSpawn = function(pid, cellDescription)
    end
 end
 
-Methods.OnPlayerConnect = function(pid)
+function UniqueItems.OnPlayerConnect(eventStatus, pid)
    --[[
       Ensure the player's lastSeen value is updated when they sign on.
    ]]--
@@ -301,7 +264,7 @@ Methods.OnPlayerConnect = function(pid)
    end
 end
 
-Methods.OnPlayerDisconnect = function(pid)
+function UniqueItems.OnPlayerDisconnect(eventStatus, pid)
    --[[
       Ensure the player's lastSeen value is updated when they sign out.
    ]]--
@@ -311,7 +274,7 @@ Methods.OnPlayerDisconnect = function(pid)
    end
 end
 
-Methods.OnPlayerInventory = function(pid)
+function UniqueItems.OnPlayerInventory(eventStatus, pid)
    --[[
       When the player opens their inventory UI.
       It's possible for an item to be added this way.
@@ -459,7 +422,7 @@ local function readPlayerData()
    end
 end
 
-Methods.OnServerPostInit = function()
+function UniqueItems.OnServerPostInit()
    --[[
       Call this at the very end of OnServerPostInit inside of serverCore.lua
    ]]--
@@ -471,4 +434,8 @@ Methods.OnServerPostInit = function()
 
 end
 
-return Methods
+customEventHooks.registerHandler("OnObjectSpawn", UniqueItems.OnObjectSpawn)
+customEventHooks.registerHandler("OnPlayerConnect", UniqueItems.OnPlayerConnect)
+customEventHooks.registerHandler("OnPlayerDisconnect", UniqueItems.OnPlayerDisconnect)
+customEventHooks.registerHandler("OnPlayerInventory", UniqueItems.OnPlayerInventory)
+customEventHooks.registerHandler("OnServerPostInit", UniqueItems.OnServerPostInit)
