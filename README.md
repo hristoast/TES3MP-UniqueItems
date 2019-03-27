@@ -10,6 +10,8 @@ Players that haven't logged in for a certain amount of time (30 days by default)
 
 1. Place `UniqueItems.lua` into your `CoreScripts/scripts` directory.  Symlinks are OK.
 
+1. Place `lfs.so` into your `CoreScripts/lib` directory.  Symlinks are OK.
+
 1. Place the `UniqueItemsDB.json` file into the `CoreScripts/data/UniqueItems`.  Create the directory, symlinks are OK.
 
 1. Add the following to `CoreScripts/scripts/customScripts.lua`:
