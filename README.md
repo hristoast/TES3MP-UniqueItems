@@ -16,6 +16,6 @@ Players that haven't logged in for a certain amount of time (30 days by default)
 
 1. Add the following to `CoreScripts/scripts/customScripts.lua`:
 
-        require("UniqueItems")
+        require("custom/UniqueItems")
 
 1. Optionally configure the `config.idleDaysLimit` value to suit your liking.
