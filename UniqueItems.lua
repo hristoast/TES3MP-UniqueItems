@@ -38,13 +38,13 @@ config.extraItems = {}
 config.idleDaysLimit = 30
 
 -- Path to the folder that will contain the item DB file.
-config.dataPath = "../../CoreScripts/data/UniqueItems/"
+config.dataPath = "/custom/UniqueItems/"
 
 -- Path to the cell data folder.
-config.cellDataPath = "../../CoreScripts/data/cell/"
+config.cellDataPath = tes3mp.GetModDir() .. "/cell/"
 
 -- Path to the player data folder.
-config.playerDataPath = "../../CoreScripts/data/player/"
+config.playerDataPath = tes3mp.GetModDir() .. "/player/"
 
 -- Name of the DB file
 config.jsonFileName = "UniqueItemsDB.json"
@@ -176,6 +176,14 @@ local function whoHoldsItem(data, itemRefId)
    return nil
 end
 
+local function playerSave(pid)
+   dbg("Called \"playerSave\" for pid " .. pid .. ".")
+   Players[pid]:Save()
+   Players[pid]:LoadInventory()
+   Players[pid]:LoadEquipment()
+   Players[pid]:LoadQuickKeys()
+end
+
 local function handleDupeUnique(pid, itemName, playerHas)
    --[[
       Called when a player picks up a unique item that's already claimed.
@@ -194,10 +202,7 @@ local function handleDupeUnique(pid, itemName, playerHas)
       player.data.inventory[itemInvIndex] = nil
    end
 
-   player:Save()
-   player:LoadInventory()
-   player:LoadEquipment()
-   player:LoadQuickKeys()
+   playerSave(pid)
 end
 
 local function updateLastSeen(pid)
@@ -274,6 +279,16 @@ function UniqueItems.OnPlayerDisconnect(eventStatus, pid)
    end
 end
 
+local function onlyOne(pid, itemName)
+   dbg("Called \"onlyOne\" for pid " .. pid .. " and itemName \"" .. itemName .. "\".")
+   local player = Players[pid]
+   local itemInvIndex = tableHelper.getIndexByNestedKeyValue(player.data.inventory, "refId", itemName)
+   if player.data.inventory[itemInvIndex].count > 1 then
+      player.data.inventory[itemInvIndex].count = 1
+      playerSave(pid)
+   end
+end
+
 function UniqueItems.OnPlayerInventory(eventStatus, pid)
    --[[
       When the player opens their inventory UI.
@@ -302,6 +317,7 @@ function UniqueItems.OnPlayerInventory(eventStatus, pid)
 
       if isUnique and action == ADD then
          warn("Player \"" .. Players[pid].accountName .. "\" has picked up \"" .. itemName .. "\".")
+         onlyOne(pid, itemName)
          updateDB("insert", Players[pid].accountName, itemName, dbData, true)
          break
       elseif isUnique and action == REMOVE then
@@ -311,6 +327,26 @@ function UniqueItems.OnPlayerInventory(eventStatus, pid)
       end
 
    end
+end
+
+local function loadFile(fileName)
+
+   local json = require("dkjson")
+
+    if jsonInterface.ioLibrary == nil then
+        print(jsonInterface.libraryMissingMessage)
+        return nil
+    end
+
+    local file = jsonInterface.ioLibrary.open(fileName, 'r')
+
+    if file ~= nil then
+        local content = file:read("*all")
+        file:close()
+        return json.decode(content, 1, nil)
+    else
+        return nil
+    end
 end
 
 local function readCellData()
@@ -336,7 +372,7 @@ local function readCellData()
    end
 
    for _, f in pairs(cellFiles) do
-      local cellData = jsonInterface.load(f)
+      local cellData = loadFile(f)
 
       for index, thing in pairs(cellData.objectData) do
          if thing.inventory then
@@ -354,7 +390,6 @@ local function readCellData()
 
       jsonInterface.save(f, cellData)
    end
-
 end
 
 local function readPlayerData()
@@ -375,7 +410,7 @@ local function readPlayerData()
       end
 
       for _, f in pairs(playerFiles) do
-         local playerData = jsonInterface.load(f)
+         local playerData = loadFile(f)
          local playerName = playerData.login.name
          local playerInDB = dbData[playerName] ~= nil
          local uniquesToRemove = nil
