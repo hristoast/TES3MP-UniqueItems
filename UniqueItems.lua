@@ -1,8 +1,4 @@
 --[[
-   Ensure there's only on instance of any unique item, and if one's held by a player
-   that's been offline for more than N days, replace it back into the world.
-   https://i.imgur.com/rsuXB69.gif
-
    References for unique items in vanilla Morrowind:
 
        http://en.uesp.net/wiki/Morrowind:Eltonbrand
@@ -10,22 +6,7 @@
        http://en.uesp.net/wiki/Morrowind:Mentor%27s_Ring
        http://en.uesp.net/wiki/Morrowind:Artifacts
        http://en.uesp.net/wiki/Morrowind:Unique_Clothing
-
-   INSTALLATION:
-
-   1) Place `UniqueItems.lua` into your `CoreScripts/scripts` directory.  Symlinks are OK.
-
-   2) Place the `UniqueItemsDB.json` file into the `CoreScripts/data/UniqueItems`.  Create the directory, symlinks are OK.
-
-   3) Add the following to `CoreScripts/scripts/customScripts.lua`:
-
-       require("UniqueItems")
-
-   4) Optionally configure `config.idleDaysLimit` to suit your fancy (found below.)
-
-VERSION: 2
-
---]]
+]]--
 local UniqueItems = {}
 local lfs = require("lfs")
 local config = {}
@@ -74,13 +55,14 @@ local rare_item_ids = { "Akatosh Ring", "amulet_aundae", "amulet_berne", "amulet
                         "mace of molag bal_unique", "madstone", "malipu_ataman's_belt", "mehrunes'_razor_unique",
                         "moon_and_star", "peakstar_belt_unique", "peakstar_pants_unique", "Right_Hand_of_Zenithar",
                         "ring_denstagmer_unique", "ring_dahrkmezalf_uniq", "ring_equity_uniq", "ring_fathasa_unique",
-                        "ring_khajiit_unique", "ring_marara_unique", "ring_mentor_unique", "ring_phynaster_unique",
-                        "ring_shashev_unique", "ring_surrounding_unique", "ring_vampiric_unique", "ring_warlock_unique",
-                        "ring_wind_unique", "robe_of_erur_dan", "seizing", "Septim Ring", "shoes of st. rilms",
-                        "soul ring", "spear_mercy_unique", "spell_breaker_unique", "staff_hasedoki_unique",
-                        "staff_magnus_unique", "Stendarran Belt", "sunder", "teeth", "tenpaceboots", "thong",
-                        "towershield_eleidon_unique", "warhammer_crusher_unique", "wraithguard", "wraithguard_jury_rig",
-                        "Zenithar's_Warning", "Zenithar's_Wiles" }
+                        "ring_keley", "ring_khajiit_unique", "ring_marara_unique", "ring_mentor_unique",
+                        "ring_phynaster_unique", "ring_shashev_unique", "ring_surrounding_unique",
+                        "ring_vampiric_unique", "ring_warlock_unique", "ring_wind_unique", "robe_of_erur_dan",
+                        "seizing", "Septim Ring", "shoes of st. rilms", "soul ring", "spear_mercy_unique",
+                        "spell_breaker_unique", "staff_hasedoki_unique", "staff_magnus_unique", "Stendarran Belt",
+                        "sunder", "teeth", "tenpaceboots", "thong", "towershield_eleidon_unique",
+                        "warhammer_crusher_unique", "wraithguard", "wraithguard_jury_rig", "Zenithar's_Warning",
+                        "Zenithar's_Wiles" }
 
 local function dbg(msg)
    --[[ Convenient logging wrapper. ]]--
