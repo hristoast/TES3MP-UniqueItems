@@ -415,9 +415,6 @@ function UniqueItemDBupdateTimerExpired()
 end
 
 function UniqueItems.OnServerPostInit()
-   --[[
-      Call this at the very end of OnServerPostInit inside of serverCore.lua
-   ]]--
    info("Called \"OnServerPostInit\"")
 
    updateDatabase()
