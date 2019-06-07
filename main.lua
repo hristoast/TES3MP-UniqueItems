@@ -314,24 +314,27 @@ local function readCellData()
    for f in lfs.dir(cellDataPath) do
       if string.match(f, ".json") then
          cellData = jsonInterface.load("/cell/" .. f)
-      else
-         break
-      end
 
-      for index, thing in pairs(cellData.objectData) do
-         if thing.inventory then
-            for iIndex, item in pairs(thing.inventory) do
-               if tableHelper.containsValue(heldUniques, item.refId) then
-                  warn("Removing unique \"" .. item.refId .. "\" from cell \"" .. f ..
-                          "\" as it is already held by a player.")
+         for index, thing in pairs(cellData.objectData) do
+            if thing.inventory then
+               for iIndex, item in pairs(thing.inventory) do
+                  if tableHelper.containsValue(heldUniques, item.refId) then
 
-                  cellData.objectData[index].inventory[iIndex] = null
+                     warn("Removing unique \"" .. item.refId .. "\" from cell \"" .. f ..
+                             "\" as it is already held by a player.")
+                     cellData.objectData[index].inventory[iIndex] = nil
+                  end
                end
+
+            elseif thing.refId and tableHelper.containsValue(heldUniques, thing.refId) then
+               warn("Removing unique \"" .. thing.refId .. "\" from cell \"" .. f:gsub(".json", "") ..
+                       "\" as it is already held by a player.")
+               cellData.objectData[index] = nil
             end
          end
-      end
 
-      jsonInterface.save("/cell/" .. f, cellData)
+         jsonInterface.save("/cell/" .. f, cellData)
+      end
    end
 end
 
