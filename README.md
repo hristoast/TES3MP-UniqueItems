@@ -2,20 +2,40 @@
 
 Ensure that unique items stay unique!
 
-Unique items (based on an internal, appendable list) are now limited to one at a time.  Any extras that happen to be found or spawned in will be zapped out of existence.
+Requires [DataManager](https://github.com/tes3mp-scripts/DataManager) and [LuaFileSystem](https://keplerproject.github.io/luafilesystem/) (included in this repo)!
 
-Players that haven't logged in for a certain amount of time (30 days by default) will lose any unique items they are holding (when the server restarts.)
+Unique items are now limited to one at a time.  Any extras that happen to be found or spawned in will be zapped out of existence.
+
+Players that haven't logged in for a certain amount of time (30 days by default) will lose any unique items they are holding.
 
 ## Usage
 
-1. Place `UniqueItems.lua` into your `CoreScripts/scripts/custom/` directory.  Symlinks are OK.
+1. Place this repository into your `CoreScripts/scripts/custom/` directory.
 
-1. Place `lfs.so` into your `CoreScripts/lib` directory.  Symlinks are OK.
-
-1. Place the `UniqueItemsDB.json` file into the `CoreScripts/data/custom/UniqueItems/` directory.  Create the directory, symlinks are OK.
+1. Place [`lib/lfs.so`](lib/) into your `CoreScripts/lib` directory.
 
 1. Add the following to `CoreScripts/scripts/customScripts.lua`:
 
-        require("custom/UniqueItems")
+        require("custom/UniqueItems/main")
 
-1. Optionally configure the `config.idleDaysLimit` value to suit your liking.
+## Options
+
+* `announcePickups`
+
+Boolean.  Announce to all players when a unique item is picked up.
+
+* `idleDaysLimit`
+
+Integer.  The number of days before a player is considered idle and their held uniques removed.
+
+* `rare_item_ids`
+
+Table of strings.  The RefId of any item that's to be considered unique.
+
+The below links were used as a reference for the default list:
+
+* http://en.uesp.net/wiki/Morrowind:Eltonbrand
+* http://en.uesp.net/wiki/Morrowind:Goldbrand
+* http://en.uesp.net/wiki/Morrowind:Mentor%27s_Ring
+* http://en.uesp.net/wiki/Morrowind:Artifacts
+* http://en.uesp.net/wiki/Morrowind:Unique_Clothing
