@@ -13,6 +13,7 @@ UniqueItems.scriptName = "UniqueItems"
 
 UniqueItems.defaultConfig = {
    announcePickups = true,
+   dbUpdateInterval = 24,
    idleDaysLimit = 30,
    rare_item_ids = {
       "Akatosh Ring", "amulet_aundae", "amulet_berne", "amulet_quarra", "amulet_unity_uniq",
@@ -54,6 +55,10 @@ local lfs = require("lfs")
 local cellDataPath = tes3mp.GetModDir() .. "/cell/"
 local idleSecondsLimit = 60 * 60 * 24 * UniqueItems.config.idleDaysLimit
 local playerDataPath = tes3mp.GetModDir() .. "/player/"
+local updateTimeSeconds = 60 * 60 * 24 * UniqueItems.config.dbUpdateInterval
+
+local dbUpdateTimer = tes3mp.CreateTimerEx("UniqueItemDBupdateTimerExpired",
+                                           time.seconds(updateTimeSeconds), "i", 0)
 
 local function dbg(msg)
    tes3mp.LogMessage(enumerations.log.VERBOSE, "[ UniqueItems ]: " .. msg)
@@ -394,14 +399,28 @@ local function readPlayerData()
    end
 end
 
+local function updateDatabase()
+   readPlayerData()
+   readCellData()
+   if UniqueItems.config.dbUpdateInterval > 0 then
+      tes3mp.StartTimer(dbUpdateTimer)
+   else
+      warn("Scheduled DB updates are disabled!")
+   end
+end
+
+function UniqueItemDBupdateTimerExpired()
+   dbg("Timer expired!  Re-running...")
+   updateDatabase()
+end
+
 function UniqueItems.OnServerPostInit()
    --[[
       Call this at the very end of OnServerPostInit inside of serverCore.lua
    ]]--
    info("Called \"OnServerPostInit\"")
 
-   readPlayerData()
-   readCellData()
+   updateDatabase()
 end
 
 customEventHooks.registerHandler("OnObjectSpawn", UniqueItems.OnObjectSpawn)

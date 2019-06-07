@@ -24,6 +24,10 @@ Players that haven't logged in for a certain amount of time (30 days by default)
 
 Boolean.  Announce to all players when a unique item is picked up.
 
+* `dbUpdateInterval`
+
+Integer.  The number of hours between database updates.  Set to `0` to disable.
+
 * `idleDaysLimit`
 
 Integer.  The number of days before a player is considered idle and their held uniques removed.
