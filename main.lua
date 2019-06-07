@@ -215,14 +215,12 @@ function UniqueItems.OnObjectSpawn(eventStatus, pid, cellDescription)
    end
 end
 
-function UniqueItems.OnPlayerConnect(eventStatus, pid)
+function UniqueItems.OnPlayerAuthentified(eventStatus, pid)
    --[[
       Ensure the player's lastSeen value is updated when they sign on.
    ]]--
-   info("Called \"OnPlayerConnect\" for pid " .. pid)
-   if not string.match(logicHandler.GetChatName(pid), "Unlogged player") then
-      updateLastSeen(pid)
-   end
+   info("Called \"OnPlayerAuthentified\" for pid " .. pid)
+   updateLastSeen(pid)
 end
 
 function UniqueItems.OnPlayerDisconnect(eventStatus, pid)
@@ -230,9 +228,7 @@ function UniqueItems.OnPlayerDisconnect(eventStatus, pid)
       Ensure the player's lastSeen value is updated when they sign out.
    ]]--
    info("Called \"OnPlayerDisconnect\" for pid " .. pid)
-   if not string.match(logicHandler.GetChatName(pid), "Unlogged player") then
-      updateLastSeen(pid)
-   end
+   updateLastSeen(pid)
 end
 
 local function onlyOne(pid, itemName)
@@ -423,7 +419,8 @@ function UniqueItems.OnServerPostInit()
 end
 
 customEventHooks.registerHandler("OnObjectSpawn", UniqueItems.OnObjectSpawn)
-customEventHooks.registerHandler("OnPlayerConnect", UniqueItems.OnPlayerConnect)
-customEventHooks.registerHandler("OnPlayerDisconnect", UniqueItems.OnPlayerDisconnect)
+customEventHooks.registerHandler("OnPlayerAuthentified", UniqueItems.OnPlayerAuthentified)
 customEventHooks.registerHandler("OnPlayerInventory", UniqueItems.OnPlayerInventory)
 customEventHooks.registerHandler("OnServerPostInit", UniqueItems.OnServerPostInit)
+
+customEventHooks.registerValidator("OnPlayerDisconnect", UniqueItems.OnPlayerDisconnect)
