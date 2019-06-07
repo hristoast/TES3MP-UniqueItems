@@ -52,9 +52,11 @@ UniqueItems.config = DataManager.loadConfiguration(UniqueItems.scriptName, Uniqu
 UniqueItems.defaultData = {}
 
 local lfs = require("lfs")
+
 local cellDataPath = tes3mp.GetModDir() .. "/cell/"
-local idleSecondsLimit = 60 * 60 * 24 * UniqueItems.config.idleDaysLimit
 local playerDataPath = tes3mp.GetModDir() .. "/player/"
+
+local idleSecondsLimit = 60 * 60 * 24 * UniqueItems.config.idleDaysLimit
 local updateTimeSeconds = 60 * 60 * 24 * UniqueItems.config.dbUpdateInterval
 
 local dbUpdateTimer = tes3mp.CreateTimerEx("UniqueItemDBupdateTimerExpired",
@@ -333,7 +335,7 @@ local function readCellData()
          end
       end
 
-      jsonInterface.save(f, cellData)
+      jsonInterface.save("/cell/" .. f, cellData)
    end
 end
 
@@ -387,7 +389,7 @@ local function readPlayerData()
                for _, item in pairs(uniquesToRemove) do
                   local index = tableHelper.getIndexByNestedKeyValue(playerData.inventory, "refId", item)
                   playerData.inventory[index] = nil
-                  jsonInterface.save(f, playerData)
+                  jsonInterface.save("/players/" .. f, playerData)
                   updateDB("remove", playerName, item, dbData, nil)
                end
             end
