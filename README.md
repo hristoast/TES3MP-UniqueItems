@@ -30,7 +30,7 @@ Integer.  The number of hours between database updates.  Set to `0` to disable.
 
 * `idleDaysLimit`
 
-Integer.  The number of days before a player is considered idle and their held uniques removed.
+Integer.  The number of days before a player is considered idle and their held uniques removed.  Set to `0` to disable.
 
 * `rare_item_ids`
 
