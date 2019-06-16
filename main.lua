@@ -422,9 +422,10 @@ function UniqueItems.OnServerPostInit()
    updateDatabase()
 end
 
-customEventHooks.registerHandler("OnObjectSpawn", UniqueItems.OnObjectSpawn)
+
 customEventHooks.registerHandler("OnPlayerAuthentified", UniqueItems.OnPlayerAuthentified)
 customEventHooks.registerHandler("OnPlayerInventory", UniqueItems.OnPlayerInventory)
 customEventHooks.registerHandler("OnServerPostInit", UniqueItems.OnServerPostInit)
 
+customEventHooks.registerValidator("OnObjectSpawn", UniqueItems.OnObjectSpawn)
 customEventHooks.registerValidator("OnPlayerDisconnect", UniqueItems.OnPlayerDisconnect)
