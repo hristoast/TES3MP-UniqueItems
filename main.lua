@@ -5,6 +5,7 @@
        http://en.uesp.net/wiki/Morrowind:Goldbrand
        http://en.uesp.net/wiki/Morrowind:Mentor%27s_Ring
        http://en.uesp.net/wiki/Morrowind:Artifacts
+       https://en.uesp.net/wiki/Morrowind:Unique_Armor
        http://en.uesp.net/wiki/Morrowind:Unique_Clothing
 ]]--
 local UniqueItems = {}
@@ -16,34 +17,34 @@ UniqueItems.defaultConfig = {
    dbUpdateInterval = 24,
    idleDaysLimit = 30,
    rare_item_ids = {
-      "Akatosh Ring", "amulet_aundae", "amulet_berne", "amulet_quarra", "amulet_unity_uniq",
-      "amulet_usheeja", "amulet of ashamanu", "amulet of levitating", "amulet of shadows",
-      "amuletfleshmadewhole_uniq", "artifact_amulet of heartfire", "artifact_amulet of heartheal",
-      "artifact_amulet of heartrime", "artifact_amulet of heartthrum", "aryongloveleft",
-      "aryongloveright", "axe_queen_of_bats_unique", "belt of heartfire",
-      "Belt of Northern Knuck Knuck", "belt of the armor of god", "bitter_hand",
-      "black_blindfold_glove", "blood ring", "boots_apostle_unique", "Caius_pants", "Caius_ring",
-      "caius_shirt", "claymore_chrysamere_unique", "claymore_iceblade_unique", "cleaverstfelms",
-      "common_glove_l_moragtong", "common_glove_r_moragtong", "common_shoes_02_surefeet",
-      "crosierstllothis", "cuirass_savior_unique", "Daedric_special", "daedric_crescent_unique",
-      "daedric_helm_clavicusvile", "daedric_scourge_unique", "dagger_fang_unique",
-      "dragonbone_cuirass_unique", "dwarven_hammer_volendrung", "ebon_plate_cuirass_unique",
-      "ebony_bow_auriel", "ebony_shield_auriel", "ember hand", "expensive_shirt_hair",
-      "fork_horripilation_unique", "gauntlet_fists_l_unique", "gauntlet_fists_r_unique", "heart ring",
-      "helm_bearclaw_unique", "hort_ledd_robe_unique", "hortatorbelt", "hortatorring", "hortatorrobe",
-      "katana_bluebrand_unique", "katana_goldbrand_unique", "keening", "Left_Hand_of_Zenithar",
-      "longbow_shadows_unique", "longsword_umbra_unique", "lords_cuirass_unique",
-      "mace of molag bal_unique", "madstone", "malipu_ataman's_belt", "mehrunes'_razor_unique",
-      "misc_vivec_ashmask_01_fake", "misc_vivec_ashmask_01", "moon_and_star", "peakstar_belt_unique",
+      "Akatosh Ring", "amulet_aundae", "amulet_berne", "amulet_quarra", "amulet_unity_uniq", "amulet_usheeja",
+      "amulet of ashamanu", "amulet of levitating", "amulet of shadows", "amuletfleshmadewhole_uniq",
+      "artifact_amulet of heartfire", "artifact_amulet of heartheal", "artifact_amulet of heartrime",
+      "artifact_amulet of heartthrum", "aryongloveleft", "aryongloveright", "axe_queen_of_bats_unique",
+      "belt of heartfire", "Belt of Northern Knuck Knuck", "belt of the armor of god", "bitter_hand",
+      "black_blindfold_glove", "blood ring", "bloodworm_helm_unique", "boots_apostle_unique",
+      "boots of blinding speed[unique]", "Caius_pants", "Caius_ring", "caius_shirt", "cephalopod_helm_HTNK",
+      "conoon_chodala_boots_unique", "claymore_chrysamere_unique", "claymore_iceblade_unique", "cleaverstfelms",
+      "common_glove_l_moragtong", "common_glove_r_moragtong", "common_shoes_02_surefeet", "crosierstllothis",
+      "cuirass_savior_unique", "Daedric_special", "daedric_crescent_unique", "daedric_greaves_htab",
+      "daedric_helm_clavicusvile", "daedric_cuirass_htab", "daedric_scourge_unique", "dagger_fang_unique",
+      "darksun_shield_unique", "dragonbone_cuirass_unique", "dreugh_cuirass_ttrm", "dwarven_hammer_volendrung",
+      "ebon_plate_cuirass_unique", "ebony_bow_auriel", "ebony_closed_helm_fghl", "ebony_shield_auriel", "ember hand",
+      "erur_dan_cuirass_unique", "expensive_shirt_hair", "fork_horripilation_unique", "gauntlet_fists_l_unique",
+      "gauntlet_fists_r_unique", "Gauntlet_of_Glory_left", "gauntlet_of_glory_right", "gauntlet_horny_fist_l",
+      "gauntlet_horny_fist_r", "heart ring", "helm_bearclaw_unique", "hort_ledd_robe_unique", "hortatorbelt",
+      "hortatorring", "hortatorrobe", "icecap_unique", "imperial_helm_frald_uniq", "katana_bluebrand_unique",
+      "katana_goldbrand_unique", "keening", "Left_Hand_of_Zenithar", "longbow_shadows_unique", "longsword_umbra_unique",
+      "lords_cuirass_unique", "mace of molag bal_unique", "madstone", "malipu_ataman's_belt", "mehrunes'_razor_unique",
+      "misc_vivec_ashmask_01_fake", "misc_vivec_ashmask_01", "moon_and_star", "Mountain Spirit", "peakstar_belt_unique",
       "peakstar_pants_unique", "Right_Hand_of_Zenithar", "ring_denstagmer_unique", "ring_dahrkmezalf_uniq",
       "ring_equity_uniq", "ring_fathasa_unique", "ring_keley", "ring_khajiit_unique", "ring_marara_unique",
       "ring_mentor_unique", "ring_phynaster_unique", "ring_shashev_unique", "ring_surrounding_unique",
-      "ring_vampiric_unique", "ring_warlock_unique", "ring_wind_unique", "robe_of_erur_dan",
-      "seizing", "Septim Ring", "shoes of st. rilms", "soul ring", "spear_mercy_unique",
-      "spell_breaker_unique", "staff_hasedoki_unique", "staff_magnus_unique", "Stendarran Belt",
-      "sunder", "teeth", "tenpaceboots", "thong", "towershield_eleidon_unique",
-      "warhammer_crusher_unique", "wraithguard", "wraithguard_jury_rig", "Zenithar's_Warning",
-      "Zenithar's_Wiles"
+      "ring_vampiric_unique", "ring_warlock_unique", "ring_wind_unique", "robe_of_erur_dan", "seizing", "Septim Ring",
+      "shadow_shield", "shield of the undaunted", "shoes of st. rilms", "soul ring", "spear_mercy_unique",
+      "spell_breaker_unique", "staff_hasedoki_unique", "staff_magnus_unique", "Stendarran Belt", "sunder", "teeth",
+      "tenpaceboots", "thong", "towershield_eleidon_unique", "warhammer_crusher_unique", "wraithguard",
+      "wraithguard_jury_rig", "Zenithar's_Warning", "Zenithar's_Wiles"
    }
 }
 

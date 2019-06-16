@@ -42,4 +42,5 @@ The below links were used as a reference for the default list:
 * http://en.uesp.net/wiki/Morrowind:Goldbrand
 * http://en.uesp.net/wiki/Morrowind:Mentor%27s_Ring
 * http://en.uesp.net/wiki/Morrowind:Artifacts
+* https://en.uesp.net/wiki/Morrowind:Unique_Armor
 * http://en.uesp.net/wiki/Morrowind:Unique_Clothing
