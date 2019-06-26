@@ -22,15 +22,27 @@ Players that haven't logged in for a certain amount of time (30 days by default)
 
 * `announcePickups`
 
-Boolean.  Announce to all players when a unique item is picked up.
+Boolean.  Announce to all players when a unique item is picked up.  Default: `true`
 
 * `dbUpdateInterval`
 
-Integer.  The number of hours between database updates.  Set to `0` to disable.
+Integer.  The number of real world hours between database updates.  Set to `0` to disable.  Default: `24`
+
+* `deathDrop`
+
+Boolean.  Set this to `true` if you have another script that causes items to be dropped on player death.  Default: `false`
+
+* `deathDropMsg`
+
+String.  The message that's displayed when a player dies and drops their items.  Default: `"You've lost your held unique items!"`
+
+* `dupeItemMsg`
+
+String.  The message that's displayed when a player picks up an already held unique.  Default: `"The item you found has disintegrated in your hands!"`
 
 * `idleDaysLimit`
 
-Integer.  The number of days before a player is considered idle and their held uniques removed.  Set to `0` to disable.
+Integer.  The number of days before a player is considered idle and their held uniques removed.  Set to `0` to disable.  Default: `30`
 
 * `rare_item_ids`
 

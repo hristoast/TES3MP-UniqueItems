@@ -15,6 +15,9 @@ UniqueItems.scriptName = "UniqueItems"
 UniqueItems.defaultConfig = {
    announcePickups = true,
    dbUpdateInterval = 24,
+   deathDrop = false,
+   deathDropMsg = "You've lost your held unique items!",
+   dupeItemMsg = "The item you found has disintegrated in your hands!",
    idleDaysLimit = 30,
    rare_item_ids = {
       "Akatosh Ring", "amulet_aundae", "amulet_berne", "amulet_quarra", "amulet_unity_uniq", "amulet_usheeja",
@@ -75,16 +78,17 @@ local function info(msg)
    tes3mp.LogMessage(enumerations.log.INFO, "[ UniqueItems ]: " .. msg)
 end
 
+local function gameMsg(pid, msg)
+   tes3mp.MessageBox(pid, -1, msg)
+end
+
 local function removeItemValueAndClean(dataTable, playerName, value)
-   --[[
-      Small wrapper around removing player entries from the DB if they have no uniques.
-   ]]--
    dbg("Called \"removeItemValueAndClean\"")
-   tableHelper.removeValue(dataTable[playerName]["items"], value)
+   tableHelper.removeValue(dataTable[playerName].items, value)
 
    -- THANKS: https://stackoverflow.com/a/1252776
    local next = next
-   if next(dataTable[playerName]["items"]) == nil then
+   if next(dataTable[playerName].items) == nil then
       dataTable[playerName] = nil
    else
       tableHelper.cleanNils(dataTable[playerName])
@@ -94,55 +98,47 @@ local function removeItemValueAndClean(dataTable, playerName, value)
 end
 
 local function updateDB(action, playerName, value, dataTable, updateLastSeen)
-   --[[
-      Small wrapper around inserting a key-value pair into a table, or removing a value from it.
-   ]]--
    dbg("Called \"updateDB\" for action \"" .. action .. "\"")
+
+   local save
 
    if dataTable[playerName] == nil then
       dataTable[playerName] = {}
-      dataTable[playerName]["items"] = {}
+      dataTable[playerName].items = {}
+      save = true
+   end
+
+   if updateLastSeen then
+      dataTable[playerName].lastSeen = os.time()
    end
 
    if action == "insert" then
       dbg("Inserting into the DB: " .. playerName .. ", " .. value)
-      if updateLastSeen then
-         dataTable[playerName]["lastSeen"] = os.time()
-      end
 
-      table.insert(dataTable[playerName]["items"], value)
-      DataManager.saveData(UniqueItems.scriptName, dataTable)
+      table.insert(dataTable[playerName].items, value)
+      save = true
 
    elseif action == "remove" then
       dbg("Removing from the DB: " .. playerName .. ", " .. value)
-      if updateLastSeen then
-         dataTable[playerName]["lastSeen"] = os.time()
-      end
-
       removeItemValueAndClean(dataTable, playerName, value)
+      save = true
+   end
+
+   if save then
       DataManager.saveData(UniqueItems.scriptName, dataTable)
    end
 end
 
 local function whoHoldsItem(data, itemRefId)
-   --[[
-      Given a data table, return the player name if they hold the given item (by itemRefId.)
-
-      If they do not hold the item, return nil.
-   ]]--
    dbg("Called \"whoHoldsItem\" with item: " .. itemRefId)
    for player, _ in pairs(data) do
-      if player and tableHelper.containsValue(data[player]["items"], itemRefId) then
+      if player and tableHelper.containsValue(data[player].items, itemRefId) then
          return player
       end
    end
-   return nil
 end
 
 local function handleDupeUnique(pid, itemName, playerHas)
-   --[[
-      Called when a player picks up a unique item that's already claimed.
-   ]]--
    local player = Players[pid]
    dbg("Called \"handleDupeUnique\" with itemName " .. itemName .. " and player " .. player.accountName .. ".")
    local itemInvIndex = tableHelper.getIndexByNestedKeyValue(player.data.inventory, "refId", itemName)
@@ -159,75 +155,28 @@ local function handleDupeUnique(pid, itemName, playerHas)
 
    player:LoadInventory()
    player:LoadEquipment()
+   gameMsg(pid, UniqueItems.config.dupeItemMsg)
 end
 
 local function updateLastSeen(pid)
-   --[[
-      Small wrapper around updating a player's lastSeen value.
-   ]]--
    dbg("Called \"updateLastSeen\" for pid " .. pid)
+
    local dbData = DataManager.loadData(UniqueItems.scriptName, UniqueItems.defaultData)
    local playerName = Players[pid].accountName
    local playerInDB = dbData[playerName] ~= nil
 
    if playerInDB then
-      dbData[playerName]["lastSeen"] = os.time()
+      dbData[playerName].lastSeen = os.time()
       DataManager.saveData(UniqueItems.scriptName, dbData)
    end
 end
 
-function UniqueItems.OnObjectSpawn(eventStatus, pid, cellDescription)
-   --[[
-      Remove held uniques from cells when they spawn anew.
-
-      This has to be done here versus in OnCellLoad().
-   ]]--
-   info("Called \"OnObjectSpawn\" for " .. logicHandler.GetChatName(pid) ..
-           " and cell " .. cellDescription)
-
-   local dbData = DataManager.loadData(UniqueItems.scriptName, UniqueItems.defaultData)
-   local heldUniques = {}
-   local thisCell = LoadedCells[cellDescription]
-
-   for _, player in pairs(dbData) do
-      for _, item in pairs(player["items"]) do
-         table.insert(heldUniques, item)
-      end
-   end
-
-   for index, thing in pairs(thisCell.data.objectData) do
-      if thing.inventory then
-         for iIndex, item in pairs(thing.inventory) do
-            if tableHelper.containsValue(heldUniques, item.refId) then
-
-               warn("Removing unique \"" .. item.refId .. "\" from cell \""
-                       .. cellDescription .. "\" as it is already held by a player.")
-
-               -- TODO: This leaves the item viewable but not obtainable.
-               thisCell.data.objectData[index].inventory[iIndex] = nil
-               -- TODO: For now, disable the container if possible.
-               logicHandler.RunConsoleCommandOnObject(pid, "Disable", cellDescription, index, true)
-               -- TODO: Can the cell be reloaded at this point?
-               thisCell:Save()
-
-            end
-         end
-      end
-   end
-end
-
 function UniqueItems.OnPlayerAuthentified(eventStatus, pid)
-   --[[
-      Ensure the player's lastSeen value is updated when they sign on.
-   ]]--
    info("Called \"OnPlayerAuthentified\" for pid " .. pid)
    updateLastSeen(pid)
 end
 
 function UniqueItems.OnPlayerDisconnect(eventStatus, pid)
-   --[[
-      Ensure the player's lastSeen value is updated when they sign out.
-   ]]--
    info("Called \"OnPlayerDisconnect\" for pid " .. pid)
    updateLastSeen(pid)
 end
@@ -244,10 +193,6 @@ local function onlyOne(pid, itemName)
 end
 
 function UniqueItems.OnPlayerInventory(eventStatus, pid)
-   --[[
-      When the player opens their inventory UI.
-      It's possible for an item to be added this way.
-   ]]--
    info("Called \"OnPlayerInventory\" for pid " .. pid)
 
    local ADD = 1
@@ -277,16 +222,15 @@ function UniqueItems.OnPlayerInventory(eventStatus, pid)
          if UniqueItems.config.announcePickups then
             for _pid, _ in pairs(Players) do
                if _pid == pid then
-                  tes3mp.MessageBox(pid, -1, "You've picked up a unique item!")
+                  gameMsg(pid, "You've picked up a unique item!")
                else
-                  tes3mp.MessageBox(pid, -1, Players[pid].name .. " has picked up a unique item!")
+                  gameMsg(Players[pid].accountName .. " has picked up a unique item!")
                end
             end
          end
 
          break
       elseif isUnique and action == REMOVE then
-         -- TODO: need to make sure the player placing is the player holding the item in the db (????)
          updateDB("remove", Players[pid].accountName, itemName, dbData, true)
          break
       end
@@ -295,54 +239,56 @@ function UniqueItems.OnPlayerInventory(eventStatus, pid)
 end
 
 local function readCellData()
-   --[[
-      Read the cell data files and ensure the appropriate status of uniques.
-   ]]--
-   -- TODO: make this OnCellLoad(eventStatus, pid, cellDescription)
    dbg("Called \"readCellData\"")
 
-   local cellData
    local dbData = DataManager.loadData(UniqueItems.scriptName, UniqueItems.defaultData)
    local cellFiles = {}
    local heldUniques = {}
+   local saveCell
 
    for _, player in pairs(dbData) do
-      for _, item in pairs(player["items"]) do
+      for _, item in pairs(player.items) do
          table.insert(heldUniques, item)
       end
    end
 
    for f in lfs.dir(cellDataPath) do
       if string.match(f, ".json") then
-         cellData = jsonInterface.load("/cell/" .. f)
+         local cellDesc = f:gsub(".json", "")
+         local cell = LoadedCells[cellDesc]
 
-         for index, thing in pairs(cellData.objectData) do
+         if not cell then
+            cell = Cell(cellDesc)
+            cell:Load()
+         end
+
+         for index, thing in pairs(cell.data.objectData) do
             if thing.inventory then
                for iIndex, item in pairs(thing.inventory) do
                   if tableHelper.containsValue(heldUniques, item.refId) then
-
                      warn("Removing unique \"" .. item.refId .. "\" from cell \"" .. f ..
                              "\" as it is already held by a player.")
-                     cellData.objectData[index].inventory[iIndex] = nil
+                     cell.data.objectData[index].inventory[iIndex] = nil
+                     saveCell = true
                   end
                end
 
             elseif thing.refId and tableHelper.containsValue(heldUniques, thing.refId) then
                warn("Removing unique \"" .. thing.refId .. "\" from cell \"" .. f:gsub(".json", "") ..
                        "\" as it is already held by a player.")
-               cellData.objectData[index] = nil
+               cell.data.objectData[index] = nil
+               saveCell = true
             end
          end
 
-         jsonInterface.save("/cell/" .. f, cellData)
+         if saveCell then
+            cell:Save()
+         end
       end
    end
 end
 
 local function readPlayerData()
-   --[[
-      Read the player data files and ensure the appropriate status of uniques.
-   ]]--
    dbg("Called \"readPlayerData\"")
 
    if UniqueItems.config.idleDaysLimit > 0 then
@@ -352,16 +298,24 @@ local function readPlayerData()
 
       for f in lfs.dir(playerDataPath) do
          if string.match(f, ".json") then
-            local playerData = logicHandler.GetPlayerByName(f:gsub(".json", "")).data
-            local playerName = playerData.login.name
+            local playerName = f:gsub(".json", "")
+            local playerData = logicHandler.GetPlayerByName(playerName).data
             local playerInDB = dbData[playerName] ~= nil
             local uniquesToRemove
 
+            if playerData == nil and playerInDB then
+               dbData[playerName] = nil
+               tableHelper.cleanNils(dataTable)
+               return
+            elseif playerData == nil then
+               return
+            end
+
             if playerInDB then
                uniquesToRemove = {}
-               local withinIdleLimit = os.time() - dbData[playerName]["lastSeen"] < idleSecondsLimit
+               local withinIdleLimit = os.time() - dbData[playerName].lastSeen < idleSecondsLimit
 
-               for _, itemName in pairs(dbData[playerName]["items"]) do
+               for _, itemName in pairs(dbData[playerName].items) do
 
                   if not tableHelper.containsValue(playerData.equipment, itemName, true)
                   and not tableHelper.containsValue(playerData.inventory, itemName, true) then
@@ -389,7 +343,12 @@ local function readPlayerData()
                for _, item in pairs(uniquesToRemove) do
                   local index = tableHelper.getIndexByNestedKeyValue(playerData.inventory, "refId", item)
                   playerData.inventory[index] = nil
-                  jsonInterface.save("/players/" .. f, playerData)
+                  if Players[pid] ~= nil then
+                     Players[pid]:LoadEquipment()
+                     Players[pid]:LoadInventory()
+                  else
+                     jsonInterface.save("/players/" .. f, playerData)
+                  end
                   updateDB("remove", playerName, item, dbData, nil)
                end
             end
@@ -418,14 +377,24 @@ end
 
 function UniqueItems.OnServerPostInit()
    info("Called \"OnServerPostInit\"")
-
    updateDatabase()
+end
+
+function UniqueItems.OnPlayerDeath(eventStatus, pid)
+   info("Called \"OnPlayerDeath\" for pid " .. pid)
+   if UniqueItems.config.deathDrop then
+      local dbData = DataManager.loadData(UniqueItems.scriptName, UniqueItems.defaultData)
+      dbData[Players[pid].accountName] = nil
+      tableHelper.cleanNils(dbData)
+      DataManager.saveData(UniqueItems.scriptName, dbData)
+      gameMsg(pid, UniqueItems.config.deathDropMsg)
+   end
 end
 
 
 customEventHooks.registerHandler("OnPlayerAuthentified", UniqueItems.OnPlayerAuthentified)
+customEventHooks.registerHandler("OnPlayerDeath", UniqueItems.OnPlayerDeath)
 customEventHooks.registerHandler("OnPlayerInventory", UniqueItems.OnPlayerInventory)
 customEventHooks.registerHandler("OnServerPostInit", UniqueItems.OnServerPostInit)
 
-customEventHooks.registerValidator("OnObjectSpawn", UniqueItems.OnObjectSpawn)
 customEventHooks.registerValidator("OnPlayerDisconnect", UniqueItems.OnPlayerDisconnect)
