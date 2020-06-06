@@ -155,6 +155,7 @@ local function handleDupeUnique(pid, itemName, playerHas)
 
    player:LoadInventory()
    player:LoadEquipment()
+   player:QuicksaveToDrive()
    gameMsg(pid, UniqueItems.config.dupeItemMsg)
 end
 
@@ -189,6 +190,7 @@ local function onlyOne(pid, itemName)
       player.data.inventory[itemInvIndex].count = 1
       player:LoadInventory()
       player:LoadEquipment()
+      -- TODO: When psql support is added, use QuicksaveToDrive() here
    end
 end
 
